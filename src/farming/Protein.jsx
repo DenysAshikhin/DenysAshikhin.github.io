@@ -87,7 +87,6 @@ const Protein = ({ data }) => {
                         }
                     }
 
-
                     let originalBonuses = [];
                     let newBonuses = [];
                     let cost = farmingHelper.calcAssemblyCost(inner_val.ID, tempData);
@@ -113,20 +112,7 @@ const Protein = ({ data }) => {
                         cost_score: mathHelper.divideDecimal(cost, weightedImprovement)
                     });
                 }
-
-
-
-
-
-
-
-
-
-
-
             }
-
-
 
             // assembliesMap.sort((a, b) => b.score - a.score);
             assembliesMap.sort((a, b) => {
@@ -357,7 +343,7 @@ const Protein = ({ data }) => {
                     margin: '12px 0 12px 0', padding: '12px', borderRadius: '12px'
                 }}>
                     {/* header */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
                         <div
                             className='importantText'
                             style={{ fontSize: '36px', marginTop: '-6px', marginBottom: '6px' }}
@@ -447,11 +433,17 @@ const Protein = ({ data }) => {
                         </div>
                     </div>
                 </div>
-
-
             </div >
         </div >
     );
 };
 
 export default Protein;
+
+
+
+
+
+
+
+
