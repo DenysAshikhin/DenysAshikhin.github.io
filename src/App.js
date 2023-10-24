@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import FileUpload from './FileUpload';
 import PageSelection from './page_selection/PageSelection.jsx';
@@ -67,7 +67,8 @@ function App() {
   const [groups, setGroups] = useState([]);
   // const [defaultRank, setDefaultRank] = useState(1);
   const [defaultRank, setDefaultRank] = useLocalStorage("defaultRank", 1);
-  const [includeLocked, setIncludeLocked] = useState(false);
+  // const [includeLocked, setIncludeLocked] = useState(false);
+  const includeLocked = true;
   const [selectedItems, setSelectedItems] = useState(defaultPetSelection);
   const [tabSwitch, setTabSwitch] = useState(0);
   const [weightMap, setWeightMap] = useState(DefaultWeightMap);
@@ -119,7 +120,6 @@ function App() {
   const setWeights = (newWeightMap) => {
     setWeightMap({ ...newWeightMap });
   }
-
 
   const selectComponent = () => {
     switch (tabSwitch) {
@@ -247,7 +247,39 @@ function App() {
     }
   };
 
-  const handleData = (uploadedData) => {
+  //Recalculate used to force the groups to be...recalculated
+  const handleGroups = useCallback((data, selectedItems, recalculate) => {
+    console.log(`handle groups called`)
+    const petData = data?.PetsCollection || [];
+    const selectedItemsById = petData.reduce((accum, item) => {
+      accum[parseInt(item.ID, 10)] = item;
+      return accum;
+    }, {})
+
+    const localPets = selectedItems.map(petId => selectedItemsById[petId])
+    const keyString = selectedItems.sort().join(',');
+    let groups = groupCache[keyString];
+    if (groups && !recalculate) {
+      setGroups(groups);
+    } else {
+      groups = petHelper.findBestGroups(
+        localPets,
+        defaultRank,
+        groupRankCritera,
+        numTeams === -1 ? data.ExpeditionLimit : numTeams,
+        {
+          tokenDamageBias: tokenDamageBias,
+          activeBonuses: activeCustomBonuses,
+          setFailedFilters: setFailedFilters,
+          petWhiteList: petWhiteList
+        }
+      );
+      setGroupCache({ ...groupCache, [keyString]: groups })
+      setGroups(groups);
+    }
+  }, [activeCustomBonuses, defaultRank, groupRankCritera, numTeams, petWhiteList, tokenDamageBias]);
+
+  const handleData = useCallback((uploadedData) => {
 
     uploadedData.PetDamageBonuses = helper.calcPOW(uploadedData.PetDamageBonusesBD);
     // uploadedData.PetDamageBonuses = 1;
@@ -292,39 +324,9 @@ function App() {
 
     handleGroups(uploadedData, positiveRankedPets);
     if (tabSwitch === 0) setTabSwitch(6);  // move upload to expedition when done
-  };
+  }, [handleGroups, includeLocked, setComboSelector, setNumTeams, tabSwitch]);
 
-  //Recalculate used to force the groups to be...recalculated
-  const handleGroups = (data, selectedItems, recalculate) => {
-    console.log(`handle groups called`)
-    const petData = data?.PetsCollection || [];
-    const selectedItemsById = petData.reduce((accum, item) => {
-      accum[parseInt(item.ID, 10)] = item;
-      return accum;
-    }, {})
 
-    const localPets = selectedItems.map(petId => selectedItemsById[petId])
-    const keyString = selectedItems.sort().join(',');
-    let groups = groupCache[keyString];
-    if (groups && !recalculate) {
-      setGroups(groups);
-    } else {
-      groups = petHelper.findBestGroups(
-        localPets,
-        defaultRank,
-        groupRankCritera,
-        numTeams === -1 ? data.ExpeditionLimit : numTeams,
-        {
-          tokenDamageBias: tokenDamageBias,
-          activeBonuses: activeCustomBonuses,
-          setFailedFilters: setFailedFilters,
-          petWhiteList: petWhiteList
-        }
-      );
-      setGroupCache({ ...groupCache, [keyString]: groups })
-      setGroups(groups);
-    }
-  }
   //Fires only when we need to refresh the best pet groups (like the rank being reset)
   if (refreshGroups) {
     setRefreshGroups(false);
@@ -338,7 +340,7 @@ function App() {
       setDataUploaded(true);
       handleData(data);
     }
-  }, [dataUploaded, data, tabSwitch])
+  }, [dataUploaded, data, tabSwitch, handleData])
 
 
 
@@ -391,14 +393,14 @@ function App() {
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(0)}
             >
-              <img style={{ width: '38px' }} src={`/fapi_fork_personal/file_upload.svg`} />
+              <img alt='file uploade icon page navigation to cards page' style={{ width: '38px' }} src={`/fapi_fork_personal/file_upload.svg`} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Upload</div> */}
             </div>
             {/* {!!data && ( */}
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(1)}
             >
-              <img style={{ width: '38px' }} src={`/fapi_fork_personal/signpost.svg`} />
+              <img alt='signpost icon page navigation to expeditions page' style={{ width: '38px' }} src={`/fapi_fork_personal/signpost.svg`} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Exped.</div> */}
             </div>
             {/* )} */}
@@ -406,7 +408,7 @@ function App() {
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(2)}
             >
-              <img style={{ width: '38px' }} src={`/fapi_fork_personal/paw_plus.svg`} />
+              <img alt='dog paw icon page navigation to pet page' style={{ width: '38px' }} src={`/fapi_fork_personal/paw_plus.svg`} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Pet Combo</div> */}
             </div>
             {/* )} */}
@@ -414,7 +416,7 @@ function App() {
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(3)}
             >
-              <img style={{ width: '38px' }} src={`/fapi_fork_personal/farming.svg`} />
+              <img alt='farming icon page navigation to farming' style={{ width: '38px' }} src={`/fapi_fork_personal/farming.svg`} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Farm</div> */}
             </div>
             {/* )} */}
@@ -422,13 +424,13 @@ function App() {
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(4)}
             >
-              <img style={{ width: '38px' }} src={`/fapi_fork_personal/badge.svg`} />
+              <img alt='personal badge icon page navigation to cards page' style={{ width: '38px' }} src={`/fapi_fork_personal/badge.svg`} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Cards</div> */}
             </div>
             <div className="navItem" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px', pointerEvents: !!data ? '' : 'none', opacity: !!data ? '' : '0.4' }}
               onClick={() => setTabSwitch(7)}
             >
-              <img style={{ width: '38px' }} src={gearIcon} />
+              <img alt='mechanical gear icon page navigation to protein page' style={{ width: '38px' }} src={gearIcon} />
               {/* <div className='importantText' style={{ textAlign: 'center' }}>Protein</div> */}
             </div>
 

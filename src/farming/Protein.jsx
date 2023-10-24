@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactGA from "react-ga4";
 import { BonusMap } from '../itemMapping.js';
-import helper from '../util/helper.js';
 import farmingHelper from '../util/farmingHelper.js';
 import mathHelper from '../util/math.js';
 
@@ -12,8 +11,6 @@ import infoIcon from '../assets/images/info_white.svg';
 
 import useLocalStorage from "use-local-storage";
 
-//ProteinCurrent
-//ProteinBonus
 
 const Protein = ({ data }) => {
 
@@ -60,19 +57,24 @@ const Protein = ({ data }) => {
             // let assembliesMap = {};
             let assembliesMap = [];
 
-            tempData.AssemblerCollection.forEach((inner_val) => {
+            for (let c = 0; c < tempData.AssemblerCollection.length; c++) {
+                let inner_val = tempData.AssemblerCollection[c];
+
 
                 if (inner_val.LockQty <= totalLevels && (inner_val.Level < inner_val.LevelMax)) {
                     let increasedBonuses = {};
-                    tempData.AssemblerCollection.forEach((inner_val_nested) => {
 
-                        inner_val_nested.BonusList.forEach((inner_bonus) => {
+                    //Calculate increase bonus if this line is upgraded
+                    for (let v = 0; v < tempData.AssemblerCollection.length; v++) {
+                        let inner_val_nested = tempData.AssemblerCollection[v];
+                        for (let b = 0; b < inner_val_nested.BonusList.length; b++) {
+                            let inner_bonus = inner_val_nested.BonusList[b];
                             if (!increasedBonuses[inner_bonus.ID]) {
                                 increasedBonuses[inner_bonus.ID] = 1;
                             }
 
                             if (inner_bonus.StartingLevel > (inner_val_nested.Level + 1)) {
-                                return;
+                                continue;
                             }
 
                             let levelToUse = inner_val_nested.ID === inner_val.ID ? inner_val_nested.Level + 1 : inner_val_nested.Level
@@ -82,8 +84,10 @@ const Protein = ({ data }) => {
                                     inner_bonus,
                                     levelToUse
                                 );
-                        })
-                    });
+                        }
+                    }
+
+
                     let originalBonuses = [];
                     let newBonuses = [];
                     let cost = farmingHelper.calcAssemblyCost(inner_val.ID, tempData);
@@ -97,9 +101,7 @@ const Protein = ({ data }) => {
                     let weightedImprovement = 0;
                     for (const [key, value] of Object.entries(currentBonusTotals)) {
 
-                        let improvement = increasedBonuses[key] / value;
-                        let alternateImprov = (increasedBonuses[key] - value) / value
-                        improvement *= currentWeights[key];
+                        let alternateImprov = (increasedBonuses[key] - value) / value;
                         alternateImprov *= currentWeights[key];
                         weightedImprovement += alternateImprov;
                     }
@@ -111,7 +113,21 @@ const Protein = ({ data }) => {
                         cost_score: mathHelper.divideDecimal(cost, weightedImprovement)
                     });
                 }
-            });
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+
+
             // assembliesMap.sort((a, b) => b.score - a.score);
             assembliesMap.sort((a, b) => {
                 if (b.cost_score.lessThan(a.cost_score)) {
@@ -121,9 +137,7 @@ const Protein = ({ data }) => {
             });
 
 
-
-
-            let cost = farmingHelper.calcAssemblyCost(assembliesMap[0].ID, data);
+            let cost = farmingHelper.calcAssemblyCost(assembliesMap[0].ID, tempData);
             let timeToPurchase = mathHelper.subtractDecimal(cost, currProtein);
 
             if (currProtein.greaterThan(cost)) {
@@ -155,18 +169,17 @@ const Protein = ({ data }) => {
             tempData.AssemblerCollection[assembliesMap[0].ID].Level++;
             totalLevels++;
             currentBonusTotals = {};
-            tempData.AssemblerCollection.forEach((inner_val) => {
-                inner_val.BonusList.forEach((inner_bonus) => {
+            for (let c = 0; c < tempData.AssemblerCollection.length; c++) {
+                let inner_val = tempData.AssemblerCollection[c];
+                for (let v = 0; v < inner_val.BonusList.length; v++) {
+                    let inner_bonus = inner_val.BonusList[v];
                     if (!currentBonusTotals[inner_bonus.ID]) {
                         currentBonusTotals[inner_bonus.ID] = 1;
                     }
                     currentBonusTotals[inner_bonus.ID] *= farmingHelper.calcAssemblyLine(inner_bonus, inner_val.Level);
-                })
-            });
+                }
+            }
             console.log(`best assembly: ${assembliesMap[0].ID + 1}`)
-            // assembliesMap.sort((a, b) => b.score - a.score);
-            // console.log(`best assembly: ${assembliesMap[0].ID + 1}`)
-            //
         }
     }
 
@@ -180,7 +193,6 @@ const Protein = ({ data }) => {
             }}
         >
             <div style={{
-                paddingLeft: '6px',
                 display: 'flex',
                 flex: '1',
                 // alignItems: 'center',
@@ -235,17 +247,17 @@ const Protein = ({ data }) => {
 
 
                             <MouseOverPopover tooltip={
-                                <div style={{maxWidth:'814px'}}>
+                                <div style={{ maxWidth: '814px' }}>
                                     <div style={{ display: 'flex' }}>
                                         <div style={{ fontWeight: 'bold', marginRight: '6px' }}>
                                             Use cumulative purchase time:
                                         </div>
                                         <div>
-                                            when checked, will display each purchase time as the time necessary to buy all the upgrades before that purchase (inculding itself). 
+                                            when checked, will display each purchase time as the time necessary to buy all the upgrades before that purchase (inculding itself).
                                             Otherwise, it will show the current time to purchase if it is the next assembly upgraded
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', marginTop:'12px' }}>
+                                    <div style={{ display: 'flex', marginTop: '12px' }}>
                                         <div style={{ fontWeight: 'bold', marginRight: '6px' }}>
                                             Num purchases:
                                         </div>
@@ -256,7 +268,7 @@ const Protein = ({ data }) => {
                                     </div>
                                 </div>
                             }>
-                                <img src={infoIcon} style={{ height: '24px' }} />
+                                <img alt='info icon popup additional information' src={infoIcon} style={{ height: '24px' }} />
 
                             </MouseOverPopover>
 
@@ -428,6 +440,7 @@ const Protein = ({ data }) => {
                                                     <AssemblyItem e={{ ...e, index: index }} currentWeight={currentWeights} setCurrentWeights={setCurrentWeights} />
                                                 </div>
                                             )
+                                        return null
                                     })
                                 }
                             </div>
@@ -442,11 +455,3 @@ const Protein = ({ data }) => {
 };
 
 export default Protein;
-
-
-
-
-
-
-
-

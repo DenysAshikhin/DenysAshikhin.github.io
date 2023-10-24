@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { Notifications } from 'react-push-notification';
 
 // import ReactGA from 'react-ga';
 // ReactGA.initialize('G-QT1B9TZS0P', {
@@ -19,7 +18,6 @@ import { Notifications } from 'react-push-notification';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>
-  // {/* <Notifications /> */ }
   < App />
   // </React.StrictMode> 
 );
