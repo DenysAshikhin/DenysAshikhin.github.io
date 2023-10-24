@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.0d98cd60.css",
-    "main.js": "/static/js/main.bd252550.js",
+    "main.js": "/static/js/main.4888dae4.js",
     "static/js/21.dbe9752b.chunk.js": "/static/js/21.dbe9752b.chunk.js",
     "static/js/520.1d1e3e59.chunk.js": "/static/js/520.1d1e3e59.chunk.js",
     "static/js/942.b5847a93.chunk.js": "/static/js/942.b5847a93.chunk.js",
@@ -61,11 +61,11 @@
     "static/media/pin-line-icon.svg": "/static/media/pin-line-icon.2fa17ef032fe29d69c07eaf7ec1135be.svg",
     "static/media/gear_lightgray.svg": "/static/media/gear_lightgray.f6b9ae9a1fe118d0ac1cd8d456fb194e.svg",
     "static/media/trash-can-icon.svg": "/static/media/trash-can-icon.a18a8749ac54cca4c2f59b55d20cca81.svg",
-    "static/media/x_icon.svg": "/static/media/x_icon.e6091a530d75adde1df68129a099b94d.svg",
     "index.html": "/index.html",
+    "static/media/x_icon.svg": "/static/media/x_icon.e6091a530d75adde1df68129a099b94d.svg",
     "static/media/right_arrow_white.svg": "/static/media/right_arrow_white.49846f3360740d92de5d78e3fe8e6773.svg",
     "main.0d98cd60.css.map": "/static/css/main.0d98cd60.css.map",
-    "main.bd252550.js.map": "/static/js/main.bd252550.js.map",
+    "main.4888dae4.js.map": "/static/js/main.4888dae4.js.map",
     "21.dbe9752b.chunk.js.map": "/static/js/21.dbe9752b.chunk.js.map",
     "520.1d1e3e59.chunk.js.map": "/static/js/520.1d1e3e59.chunk.js.map",
     "942.b5847a93.chunk.js.map": "/static/js/942.b5847a93.chunk.js.map",
@@ -84,6 +84,6 @@
   },
   "entrypoints": [
     "static/css/main.0d98cd60.css",
-    "static/js/main.bd252550.js"
+    "static/js/main.4888dae4.js"
   ]
 }
